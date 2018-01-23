@@ -1,0 +1,20 @@
+{
+    "collab_server" : "",
+    "contents" : "# Data transformation\nlibrary(dplyr)\nlibrary(stringr)\nlibrary(magrittr)\nlibrary(lubridate)\n\n# Data visualization\nlibrary(ggplot2)\n\n# Import employee status dataset\nles <- read.csv(\"C:/Users/yubee/Documents/Datasets/les.csv\",\n               fileEncoding = \"UTF-8-BOM\",\n               stringsAsFactors = F,\n               colClasses = c(\"character\", \"integer\", \"character\", \"character\", \"Date\", \"Date\"),\n               na.strings = \"NULL\") %>%\n  tbl_df() %>%\n  mutate(div = str_sub(bu_code, 1, 3),\n         end_date = if_else(is.na(end_date), Sys.Date(), end_date)) %>%\n  select(div, everything()) %>%\n  group_by(div)\n\n# Count employees per date\ndates <- data.frame(date = seq.Date(as.Date(\"2015-01-01\"), as.Date(\"2017-11-30\"), by = \"day\"))\ndiv_ee_days <- data.frame(date = as.Date(character()), div = character(), ee_count = integer())\n\nfor(i in 1:nrow(dates)) {\n  count_div <- filter(les, dates$date[i] >= status_effective_date, dates$date[i] < end_date, employee_status_type_code != \"s\") %>%\n    summarize(n = n())\n\n  div_ee_days <- div_ee_days %>% rbind(cbind(dates$date[i], count_div))\n}\n\ndiv_ee_days <- div_ee_days %>%\n  tbl_df() %>%\n  mutate(year = year(`dates$date[i]`),\n         month = month(`dates$date[i]`)) %>%\n  group_by(year, month, div) %>%\n  summarize(employees = mean(n))\n\nggplot(data = div_ee_days, aes(x = `dates$date[i]`, y = n) +\n  geom_line() +\n  stat_smooth(method = \"loess\", col = \"red\") +\n  theme_bw()\n",
+    "created" : 1514222288040.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "2025443827",
+    "id" : "3E5A1896",
+    "lastKnownWriteTime" : 1513448800,
+    "last_content_update" : 1513448800,
+    "path" : "~/R Scripts/les.R",
+    "project_path" : null,
+    "properties" : {
+    },
+    "relative_order" : 1,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_source"
+}
